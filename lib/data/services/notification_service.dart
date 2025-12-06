@@ -21,51 +21,39 @@ class NotificationService {
   }
 
   // ---------------------------------------------------------------------------
-  // 🔹 1) تهيئة الإشعارات — Android + iOS
+  // 1) INIT
   // ---------------------------------------------------------------------------
   Future<void> _initializeNotifications() async {
     if (_isInitialized) return;
 
-    const AndroidInitializationSettings initAndroid =
+    const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    const DarwinInitializationSettings initDarwin =
+    const DarwinInitializationSettings iosSettings =
         DarwinInitializationSettings(
-          requestAlertPermission: false,
-          requestBadgePermission: false,
-          requestSoundPermission: false,
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
         );
 
-    const InitializationSettings settings = InitializationSettings(
-      android: initAndroid,
-      iOS: initDarwin,
-      macOS: initDarwin,
+    const InitializationSettings initSettings = InitializationSettings(
+      android: androidSettings,
+      iOS: iosSettings,
+      macOS: iosSettings,
     );
 
-    await flutterLocalNotificationsPlugin.initialize(
-      settings,
-      onDidReceiveNotificationResponse: (response) {
-        developer.log("📩 Notification clicked → ${response.payload}");
-      },
-    );
+    await flutterLocalNotificationsPlugin.initialize(initSettings);
 
-    await _createNotificationChannels();
+    await _createAndroidChannels();
+
     _isInitialized = true;
-    developer.log('✅ NotificationService initialized');
+    developer.log("✅ NotificationService initialized");
   }
 
   // ---------------------------------------------------------------------------
-  // 🔹 2) إنشاء القنوات الصوتية للأذان
+  // 2) Android Channels
   // ---------------------------------------------------------------------------
-  static const List<String> _muezzinRawSounds = [
-    'yasir',
-    'naseer',
-    'mishary',
-    'abdulbasit',
-    'notification', // تذكير قبل الفجر
-  ];
-
-  Future<void> _createNotificationChannels() async {
+  Future<void> _createAndroidChannels() async {
     final android =
         flutterLocalNotificationsPlugin
             .resolvePlatformSpecificImplementation<
@@ -74,23 +62,31 @@ class NotificationService {
 
     if (android == null) return;
 
-    for (final sound in _muezzinRawSounds) {
+    final List<String> sounds = [
+      'yasir',
+      'naseer',
+      'mishary',
+      'abdulbasit',
+      'notification',
+    ];
+
+    for (final s in sounds) {
       final channel = AndroidNotificationChannel(
-        'prayer_channel_$sound',
-        'أذان/تنبيه (${sound.toUpperCase()})',
-        description: 'تنبيهات الصلاة بصوت $sound',
+        'prayer_channel_$s',
+        'أذان $s',
+        description: 'صوت الأذان ($s)',
         importance: Importance.max,
         playSound: true,
-        sound: RawResourceAndroidNotificationSound(sound),
+        sound: RawResourceAndroidNotificationSound(s),
       );
       await android.createNotificationChannel(channel);
     }
 
-    // قناة التذكيرات
+    // silent reminder
     await android.createNotificationChannel(
       const AndroidNotificationChannel(
         'prayer_reminder_channel',
-        'تذكيرات الصلاة',
+        'تذكير الصلاة',
         description: 'تنبيهات بدون صوت',
         importance: Importance.high,
       ),
@@ -98,63 +94,7 @@ class NotificationService {
   }
 
   // ---------------------------------------------------------------------------
-  // 🔹 3) صلاحيات إشعارات Android 12+ (Exact Alarm)
-  // ---------------------------------------------------------------------------
-  Future<bool> ensureExactAlarmsEnabled() async {
-    final android =
-        flutterLocalNotificationsPlugin
-            .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin
-            >();
-    if (android == null) return true;
-
-    try {
-      final granted = await android.requestExactAlarmsPermission();
-      return granted ?? true;
-    } catch (_) {
-      return true;
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // 🔹 4) فحص هل الإشعارات مسموحة — Android + iOS
-  // ---------------------------------------------------------------------------
-  Future<bool> areNotificationsEnabled() async {
-    try {
-      // ANDROID
-      final android =
-          flutterLocalNotificationsPlugin
-              .resolvePlatformSpecificImplementation<
-                AndroidFlutterLocalNotificationsPlugin
-              >();
-      if (android != null) {
-        return await android.areNotificationsEnabled() ?? true;
-      }
-
-      // iOS — لا يوجد API لفحص الإذن مباشرة → نستخدم requestPermissions
-      final ios =
-          flutterLocalNotificationsPlugin
-              .resolvePlatformSpecificImplementation<
-                IOSFlutterLocalNotificationsPlugin
-              >();
-      if (ios != null) {
-        final granted = await ios.requestPermissions(
-          alert: true,
-          badge: true,
-          sound: true,
-        );
-        return granted ?? true;
-      }
-
-      return true;
-    } catch (e) {
-      developer.log("⚠️ Permission check error: $e");
-      return true;
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // 🔹 5) طلب صلاحيات الإشعارات (Android + iOS)
+  // 3) Permissions
   // ---------------------------------------------------------------------------
   Future<bool> requestPermissions() async {
     try {
@@ -163,27 +103,14 @@ class NotificationService {
               .resolvePlatformSpecificImplementation<
                 IOSFlutterLocalNotificationsPlugin
               >();
-      if (ios != null) {
-        final result = await ios.requestPermissions(
-          alert: true,
-          badge: true,
-          sound: true,
-        );
-        return result ?? false;
-      }
 
-      final mac =
-          flutterLocalNotificationsPlugin
-              .resolvePlatformSpecificImplementation<
-                MacOSFlutterLocalNotificationsPlugin
-              >();
-      if (mac != null) {
-        final result = await mac.requestPermissions(
-          alert: true,
-          badge: true,
-          sound: true,
-        );
-        return result ?? false;
+      if (ios != null) {
+        return await ios.requestPermissions(
+              alert: true,
+              badge: true,
+              sound: true,
+            ) ??
+            true;
       }
 
       final android =
@@ -191,53 +118,100 @@ class NotificationService {
               .resolvePlatformSpecificImplementation<
                 AndroidFlutterLocalNotificationsPlugin
               >();
+
       if (android != null) {
-        final granted = await android.requestNotificationsPermission();
-        return granted ?? true;
+        return await android.requestNotificationsPermission() ?? true;
       }
 
       return true;
     } catch (e) {
-      developer.log("⚠️ Error requesting permissions: $e");
+      developer.log("⚠️ requestPermissions error: $e");
       return false;
     }
   }
 
+  // required by settings page
+  Future<bool> areNotificationsEnabled() async {
+    try {
+      final android =
+          flutterLocalNotificationsPlugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >();
+
+      if (android != null) {
+        return await android.areNotificationsEnabled() ?? true;
+      }
+
+      return true;
+    } catch (_) {
+      return true;
+    }
+  }
+
+  // required by settings page
+  Future<bool> ensureExactAlarmsEnabled() async {
+    try {
+      final android =
+          flutterLocalNotificationsPlugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >();
+
+      if (android != null) {
+        return await android.requestExactAlarmsPermission() ?? true;
+      }
+      return true;
+    } catch (_) {
+      return true;
+    }
+  }
+
   // ---------------------------------------------------------------------------
-  // 🔹 6) عرض إشعار فوري
+  // 4) Immediate notification
   // ---------------------------------------------------------------------------
   Future<void> showImmediateNotification({
+    required int id,
     required String title,
     required String body,
-    required int id,
     String? soundFileName,
   }) async {
     await _ensureInitialized();
 
-    final raw = soundFileName?.split('.').first;
-    final channelId =
-        raw != null ? 'prayer_channel_$raw' : 'prayer_reminder_channel';
+    String channelId = "prayer_reminder_channel";
+    AndroidNotificationDetails androidDetails;
 
-    final androidDetails = AndroidNotificationDetails(
-      channelId,
-      'مواقيت الصلاة',
-      importance: Importance.max,
-      priority: Priority.high,
-      playSound: raw != null,
-      sound: raw != null ? RawResourceAndroidNotificationSound(raw) : null,
-    );
+    if (soundFileName != null) {
+      final raw = soundFileName.split('.').first;
+      channelId = "prayer_channel_$raw";
+      androidDetails = AndroidNotificationDetails(
+        channelId,
+        'أذان',
+        importance: Importance.max,
+        priority: Priority.high,
+        playSound: true,
+        sound: RawResourceAndroidNotificationSound(raw),
+      );
+    } else {
+      androidDetails = const AndroidNotificationDetails(
+        "prayer_reminder_channel",
+        "تذكير",
+        importance: Importance.high,
+        playSound: false,
+      );
+    }
 
     const iosDetails = DarwinNotificationDetails(
       presentAlert: true,
       presentSound: true,
     );
 
-    final details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
+    await flutterLocalNotificationsPlugin.show(
+      id,
+      title,
+      body,
+      NotificationDetails(android: androidDetails, iOS: iosDetails),
     );
-
-    await flutterLocalNotificationsPlugin.show(id, title, body, details);
   }
 
   Future<void> _ensureInitialized() async {
@@ -245,43 +219,43 @@ class NotificationService {
   }
 
   // ---------------------------------------------------------------------------
-  // 🔹 7) جدولة إشعار
+  // 5) Schedule internal
   // ---------------------------------------------------------------------------
-  Future<void> _schedulePrayerNotification({
-    required DateTime scheduledTime,
+  Future<void> _schedulePrayer({
+    required int id,
+    required DateTime scheduled,
     required String title,
     required String body,
-    required int id,
     required String soundFileName,
-    bool isSilent = false,
+    bool silent = false,
   }) async {
     await _ensureInitialized();
 
-    final exactAllowed = await ensureExactAlarmsEnabled();
-    final mode =
-        exactAllowed
-            ? AndroidScheduleMode.exactAllowWhileIdle
-            : AndroidScheduleMode.inexactAllowWhileIdle;
-
-    if (scheduledTime.isBefore(DateTime.now())) {
-      scheduledTime = scheduledTime.add(const Duration(days: 1));
+    if (scheduled.isBefore(DateTime.now())) {
+      scheduled = scheduled.add(const Duration(days: 1));
     }
 
-    final tzTime = tz.TZDateTime.from(scheduledTime, tz.local);
-    final raw = soundFileName.split('.').first;
+    final tzTime = tz.TZDateTime.from(scheduled, tz.local);
 
-    final channelId =
-        isSilent ? 'prayer_reminder_channel' : 'prayer_channel_$raw';
+    String channelId =
+        silent
+            ? "prayer_reminder_channel"
+            : "prayer_channel_${soundFileName.split('.').first}";
 
-    final androidDetails = AndroidNotificationDetails(
+    final android = AndroidNotificationDetails(
       channelId,
-      isSilent ? 'تذكير' : 'أذان',
+      title,
       importance: Importance.max,
-      playSound: !isSilent,
-      sound: isSilent ? null : RawResourceAndroidNotificationSound(raw),
+      playSound: !silent,
+      sound:
+          silent
+              ? null
+              : RawResourceAndroidNotificationSound(
+                soundFileName.split('.').first,
+              ),
     );
 
-    const iosDetails = DarwinNotificationDetails(
+    const ios = DarwinNotificationDetails(
       presentAlert: true,
       presentSound: true,
     );
@@ -291,60 +265,58 @@ class NotificationService {
       title,
       body,
       tzTime,
-      NotificationDetails(android: androidDetails, iOS: iosDetails),
-      androidScheduleMode: mode,
-      matchDateTimeComponents: null,
+      NotificationDetails(android: android, iOS: ios),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      matchDateTimeComponents: null, // تستخدم للتكرار اليومي (غير مستخدمة هنا)
     );
   }
 
   // ---------------------------------------------------------------------------
-  // 🔹 8) جدولة جميع الصلوات + تذكير قبل الفجر
+  // 6) Schedule all prayer notifications
   // ---------------------------------------------------------------------------
-  Future<void> scheduleAllNotifications(PrayerTimes times) async {
+  Future<void> scheduleAllNotifications(PrayerTimes t) async {
     await _ensureInitialized();
     final prefs = await SharedPreferences.getInstance();
 
     final voice = prefs.getString(kPrayerVoiceKey) ?? 'mishary.mp3';
-    final reminderEnabled = prefs.getBool(kPreFajrReminderEnabled) ?? true;
+    final preFajrEnabled = prefs.getBool(kPreFajrReminderEnabled) ?? true;
 
     await flutterLocalNotificationsPlugin.cancelAll();
 
-    // تذكير قبل الفجر 10 دقائق
-    if (reminderEnabled) {
-      final reminder = times.fajr.subtract(const Duration(minutes: 10));
-      await _schedulePrayerNotification(
-        scheduledTime: reminder,
-        title: 'تذكير قبل الفجر',
-        body: 'تبقى 10 دقائق على أذان الفجر.',
+    // reminder 10 mins before fajr
+    if (preFajrEnabled) {
+      await _schedulePrayer(
         id: 0,
-        soundFileName: 'notification.mp3',
-        isSilent: false,
+        scheduled: t.fajr.subtract(const Duration(minutes: 10)),
+        title: "تذكير قبل الفجر",
+        body: "تبقى 10 دقائق على أذان الفجر.",
+        soundFileName: "notification.mp3",
       );
     }
 
-    final prayers = {
-      Prayer.fajr: 'الفجر',
-      Prayer.dhuhr: 'الظهر',
-      Prayer.asr: 'العصر',
-      Prayer.maghrib: 'المغرب',
-      Prayer.isha: 'العشاء',
+    // main prayers
+    int id = 1;
+    final entries = {
+      Prayer.fajr: "الفجر",
+      Prayer.dhuhr: "الظهر",
+      Prayer.asr: "العصر",
+      Prayer.maghrib: "المغرب",
+      Prayer.isha: "العشاء",
     };
 
-    int id = 1;
-    for (final entry in prayers.entries) {
-      final t = times.timeForPrayer(entry.key)!;
-      await _schedulePrayerNotification(
-        scheduledTime: t,
-        title: 'حان الآن موعد ${entry.value}',
-        body: 'الله أكبر، حي على الصلاة.',
+    for (final e in entries.entries) {
+      await _schedulePrayer(
         id: id++,
+        scheduled: t.timeForPrayer(e.key)!,
+        title: "حان الآن موعد ${e.value}",
+        body: "الله أكبر، حي على الصلاة.",
         soundFileName: voice,
       );
     }
   }
 
   // ---------------------------------------------------------------------------
-  // 🔹 9) حذف كل الإشعارات المقررة
+  // 7) Cancel All
   // ---------------------------------------------------------------------------
   Future<void> cancelAllNotifications() async {
     await flutterLocalNotificationsPlugin.cancelAll();
