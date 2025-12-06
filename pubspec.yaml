@@ -1,7 +1,7 @@
 name: prayer_times_app
 description: "Prayer Times App for Europe and Germany"
 publish_to: 'none'
-version: 3.1.0
+version: 3.1.0+1
 
 environment:
   sdk: ^3.7.2 # حافظ على إصدار الـ SDK المتوافق
