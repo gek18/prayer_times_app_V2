@@ -1,0 +1,90 @@
+name: prayer_times_app
+description: "Prayer Times App for Europe and Germany"
+publish_to: 'none'
+version: 3.1.0
+
+environment:
+  sdk: ^3.7.2 # حافظ على إصدار الـ SDK المتوافق
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  
+  # 💡 حزم المعمارية وإدارة الحالة
+  flutter_riverpod: ^3.0.3  # 🌟 الأساس المعماري (MVVM)
+  flutter_hooks: ^0.21.3+1     # موصى بها لاستخدام ConsumerWidget و Clean UI
+  hooks_riverpod: ^3.0.3
+  google_mobile_ads: ^6.0.0
+  provider: ^6.1.5+1
+
+  # حزم حساب الأوقات والموقع
+  adhan: ^2.0.0+1
+  geolocator: ^13.0.4
+  geocoding: ^4.0.0
+  flutter_qiblah: ^3.1.0+1
+  
+  # حزم التاريخ والوقت
+  intl: ^0.20.2 
+  hijri: ^3.0.0 
+  timezone: ^0.10.1
+  flutter_timezone: ^5.0.1 
+  
+  # حزم التخزين والإشعارات
+  shared_preferences: ^2.5.3
+  flutter_local_notifications: ^19.5.0
+  permission_handler: ^12.0.1 
+
+  
+  # حزم الواجهة والـ UI
+  google_fonts: ^6.3.3
+  flutter_svg: ^2.2.3
+  riverpod: ^3.0.3
+  flutter_launcher_icons: ^0.14.4
+  flutter_screenutil: ^5.9.3
+  audioplayers: ^6.5.1
+  
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_native_splash: ^2.4.7
+
+flutter_native_splash:
+  # 🔹 اللون الأساسي للخلفية (أسود مائل للأخضر ليناسب الثيم)
+  color: "#000000"
+
+  # 🔹 صورة اللوجو في المنتصف (تقدر تغيّرها لو تحب)
+  image: assets/images/icon.png
+
+  # 🔹 تفعيل لكل من أندرويد و iOS
+  android: true
+  ios: true
+
+  # 🔹 إعداد خاص لأندرويد 12+
+  android_12:
+    color: "#000000"
+    image: assets/images/icon.png
+
+  # (اختياري) لو حاب نفس الشاشة في الوضع الفاتح / الداكن
+  # color_dark: "#000000"
+  # image_dark: assets/images/icon.png
+
+
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/icons/
+    - assets/images/
+    - assets/audio/
+    - assets/hisn_al_muslim.json
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/icon.png"
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/images/icon.png"

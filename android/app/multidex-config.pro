@@ -1,0 +1,3 @@
+-keep class androidx.multidex.** { *; }
+-keep class com.hemanthraj.fluttercompass.** { *; }
+-keep class io.flutter.** { *; }
