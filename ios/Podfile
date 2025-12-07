@@ -1,7 +1,6 @@
-# 1. تحديد إصدار iOS الأدنى (ضروري للإعلانات والإشعارات)
 platform :ios, '13.0'
 
-# إيقاف إحصائيات CocoaPods لتسريع البناء
+# إعدادات لتقليل وقت البناء
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
 project 'Runner', {
@@ -26,23 +25,25 @@ end
 require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
 
 target 'Runner' do
-  use_frameworks!
+  # 🔴 التغيير الجوهري هنا: استخدام الربط الثابت
+  use_frameworks! :linkage => :static
   use_modular_headers!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 
-  # 2. هذا الجزء يقوم بإصلاح مشاكل التوافق تلقائياً
   post_install do |installer|
     installer.pods_project.targets.each do |target|
       flutter_additional_ios_build_settings(target)
       
       target.build_configurations.each do |config|
-        # الحفاظ على الإصدار 13.0
         config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
         
-        # 🔴 تعديل هام جداً: اجعل هذه القيمة NO بدلاً من YES
-        # هذا يحل مشكلة انهيار path_provider ومكتبات Swift
+        # تعطيل توزيع المكتبات لمنع الانهيار
         config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'NO'
+        
+        # تجاوز التحقق من التوقيع للمكتبات الخارجية
+        config.build_settings['CODE_SIGNING_REQUIRED'] = 'NO'
+        config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
       end
     end
   end
