@@ -6,11 +6,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:adhan/adhan.dart';
-
 import 'package:prayer_times_app/data/services/notification_service.dart';
 import 'package:prayer_times_app/presentation/viewmodels/prayer_viewmodel.dart';
 import 'package:prayer_times_app/presentation/settings/app_settings_page.dart';
-import 'package:prayer_times_app/presentation/qubla_finder.dart';
 import 'package:prayer_times_app/presentation/hisn_page.dart';
 import 'package:prayer_times_app/presentation/widgets/prayer_banner_ad.dart';
 
@@ -275,19 +273,8 @@ class HomePage extends ConsumerWidget {
                                         const HisnPage(),
                                       ),
                                 ),
+
                                 // اتجاه القبلة → بدون إعلان
-                                _buildMainButton(
-                                  context,
-                                  iconPath: 'assets/icons/qubla.svg',
-                                  label: 'اتجاه القبلة',
-                                  onTap:
-                                      () => Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => const QiblaFinder(),
-                                        ),
-                                      ),
-                                ),
                               ],
                             ),
 
