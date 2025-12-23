@@ -41,9 +41,7 @@ target 'Runner' do
         # تعطيل توزيع المكتبات لمنع الانهيار
         config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'NO'
         
-        # تجاوز التحقق من التوقيع للمكتبات الخارجية
-        config.build_settings['CODE_SIGNING_REQUIRED'] = 'NO'
-        config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+        
       end
     end
   end
