@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:adhan/adhan.dart';
 import 'package:prayer_times_app/data/services/notification_service.dart';
+import 'package:prayer_times_app/presentation/qubla_finder.dart';
 import 'package:prayer_times_app/presentation/viewmodels/prayer_viewmodel.dart';
 import 'package:prayer_times_app/presentation/settings/app_settings_page.dart';
 import 'package:prayer_times_app/presentation/hisn_page.dart';
@@ -104,12 +105,11 @@ class HomePage extends ConsumerWidget {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder:
-                      (context) => AppSettingsPage(
-                        onSettingsChanged: viewModel.refreshNotifications,
-                        notificationsPlugin:
-                            notificationService.flutterLocalNotificationsPlugin,
-                      ),
+                  builder: (context) => AppSettingsPage(
+                    onSettingsChanged: viewModel.refreshNotifications,
+                    notificationsPlugin:
+                        notificationService.flutterLocalNotificationsPlugin,
+                  ),
                 ),
               );
             },
@@ -143,145 +143,151 @@ class HomePage extends ConsumerWidget {
           SafeArea(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.w),
-              child:
-                  state.isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : SingleChildScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            SizedBox(height: 16.h),
+              child: state.isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(height: 16.h),
 
-                            // 🟢 إعلان بانر في أعلى المحتوى
-                            Center(
-                              child: PrayerBannerAd(
-                                adUnitId:
-                                    'ca-app-pub-3322345933938430/6573012749',
-                                // ✅ Test Banner ID أثناء التطوير
-                              ),
+                          // 🟢 إعلان بانر في أعلى المحتوى
+                          Center(
+                            child: PrayerBannerAd(
+                              adUnitId:
+                                  'ca-app-pub-3322345933938430/6573012749',
+                              // ✅ Test Banner ID أثناء التطوير
                             ),
-                            SizedBox(height: 20.h),
+                          ),
+                          SizedBox(height: 20.h),
 
-                            Text(
-                              state.city,
-                              style: GoogleFonts.tajawal(
-                                fontSize: 28.sp,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
+                          Text(
+                            state.city,
+                            style: GoogleFonts.tajawal(
+                              fontSize: 28.sp,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
                             ),
-                            SizedBox(height: 6.h),
-                            Text(
-                              state.hijriDate,
-                              style: GoogleFonts.tajawal(
-                                fontSize: 16.sp,
-                                color: Colors.white.withAlpha(180),
-                                fontWeight: FontWeight.w300,
-                              ),
+                          ),
+                          SizedBox(height: 6.h),
+                          Text(
+                            state.hijriDate,
+                            style: GoogleFonts.tajawal(
+                              fontSize: 16.sp,
+                              color: Colors.white.withAlpha(180),
+                              fontWeight: FontWeight.w300,
                             ),
-                            SizedBox(height: 25.h),
-                            Text(
-                              '${state.nextPrayerName} بعد:',
-                              style: GoogleFonts.tajawal(
-                                fontSize: 20.sp,
-                                color: Colors.tealAccent[100],
-                                fontWeight: FontWeight.w300,
-                              ),
+                          ),
+                          SizedBox(height: 25.h),
+                          Text(
+                            '${state.nextPrayerName} بعد:',
+                            style: GoogleFonts.tajawal(
+                              fontSize: 20.sp,
+                              color: Colors.tealAccent[100],
+                              fontWeight: FontWeight.w300,
                             ),
-                            SizedBox(height: 10.h),
-                            Text(
-                              viewModel.formatDuration(
-                                state.timeUntilNextPrayer,
-                              ),
-                              style: timerStyle,
+                          ),
+                          SizedBox(height: 10.h),
+                          Text(
+                            viewModel.formatDuration(
+                              state.timeUntilNextPrayer,
                             ),
+                            style: timerStyle,
+                          ),
 
-                            SizedBox(height: 30.h),
+                          SizedBox(height: 30.h),
 
-                            // 🕋 أوقات الصلاة
-                            if (state.prayerTimes != null) ...[
-                              _buildPrayerRow(
+                          // 🕋 أوقات الصلاة
+                          if (state.prayerTimes != null) ...[
+                            _buildPrayerRow(
+                              context,
+                              'الفجر',
+                              viewModel.formatTime(state.prayerTimes?.fajr),
+                              'fajr.svg',
+                              state.nextPrayer == Prayer.fajr,
+                              prayerTimeStyle,
+                            ),
+                            _buildPrayerRow(
+                              context,
+                              'الشروق',
+                              viewModel.formatTime(
+                                state.prayerTimes?.sunrise,
+                              ),
+                              'sunrise.svg',
+                              state.nextPrayer == Prayer.sunrise,
+                              prayerTimeStyle,
+                            ),
+                            _buildPrayerRow(
+                              context,
+                              'الظهر',
+                              viewModel.formatTime(state.prayerTimes?.dhuhr),
+                              'dhuhr.svg',
+                              state.nextPrayer == Prayer.dhuhr,
+                              prayerTimeStyle,
+                            ),
+                            _buildPrayerRow(
+                              context,
+                              'العصر',
+                              viewModel.formatTime(state.prayerTimes?.asr),
+                              'asr.svg',
+                              state.nextPrayer == Prayer.asr,
+                              prayerTimeStyle,
+                            ),
+                            _buildPrayerRow(
+                              context,
+                              'المغرب',
+                              viewModel.formatTime(
+                                state.prayerTimes?.maghrib,
+                              ),
+                              'maghrib.svg',
+                              state.nextPrayer == Prayer.maghrib,
+                              prayerTimeStyle,
+                            ),
+                            _buildPrayerRow(
+                              context,
+                              'العشاء',
+                              viewModel.formatTime(state.prayerTimes?.isha),
+                              'isha.svg',
+                              state.nextPrayer == Prayer.isha,
+                              prayerTimeStyle,
+                            ),
+                          ],
+
+                          SizedBox(height: 20.h),
+
+                          // 🔸 الأزرار السفلية
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // حصن المسلم → إعلان بيني + تنقل
+                              _buildMainButton(
                                 context,
-                                'الفجر',
-                                viewModel.formatTime(state.prayerTimes?.fajr),
-                                'fajr.svg',
-                                state.nextPrayer == Prayer.fajr,
-                                prayerTimeStyle,
-                              ),
-                              _buildPrayerRow(
-                                context,
-                                'الشروق',
-                                viewModel.formatTime(
-                                  state.prayerTimes?.sunrise,
+                                iconPath: 'assets/icons/book.svg',
+                                label: 'حصن المسلم',
+                                onTap: () => _showInterstitialAndNavigate(
+                                  context,
+                                  const HisnPage(),
                                 ),
-                                'sunrise.svg',
-                                state.nextPrayer == Prayer.sunrise,
-                                prayerTimeStyle,
                               ),
-                              _buildPrayerRow(
+
+                              _buildMainButton(
                                 context,
-                                'الظهر',
-                                viewModel.formatTime(state.prayerTimes?.dhuhr),
-                                'dhuhr.svg',
-                                state.nextPrayer == Prayer.dhuhr,
-                                prayerTimeStyle,
-                              ),
-                              _buildPrayerRow(
-                                context,
-                                'العصر',
-                                viewModel.formatTime(state.prayerTimes?.asr),
-                                'asr.svg',
-                                state.nextPrayer == Prayer.asr,
-                                prayerTimeStyle,
-                              ),
-                              _buildPrayerRow(
-                                context,
-                                'المغرب',
-                                viewModel.formatTime(
-                                  state.prayerTimes?.maghrib,
+                                iconPath: 'assets/icons/qubla.svg',
+                                label: 'إتجاه القبلة',
+                                onTap: () => _showInterstitialAndNavigate(
+                                  context,
+                                  const QiblaFinder(),
                                 ),
-                                'maghrib.svg',
-                                state.nextPrayer == Prayer.maghrib,
-                                prayerTimeStyle,
-                              ),
-                              _buildPrayerRow(
-                                context,
-                                'العشاء',
-                                viewModel.formatTime(state.prayerTimes?.isha),
-                                'isha.svg',
-                                state.nextPrayer == Prayer.isha,
-                                prayerTimeStyle,
                               ),
                             ],
+                          ),
 
-                            SizedBox(height: 20.h),
-
-                            // 🔸 الأزرار السفلية
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                // حصن المسلم → إعلان بيني + تنقل
-                                _buildMainButton(
-                                  context,
-                                  iconPath: 'assets/icons/book.svg',
-                                  label: 'حصن المسلم',
-                                  onTap:
-                                      () => _showInterstitialAndNavigate(
-                                        context,
-                                        const HisnPage(),
-                                      ),
-                                ),
-
-                                // اتجاه القبلة → بدون إعلان
-                              ],
-                            ),
-
-                            SizedBox(height: 30.h),
-                          ],
-                        ),
+                          SizedBox(height: 30.h),
+                        ],
                       ),
+                    ),
             ),
           ),
         ],
@@ -354,10 +360,9 @@ class HomePage extends ConsumerWidget {
     bool isNextPrayer,
     TextStyle timeStyle,
   ) {
-    final containerColor =
-        isNextPrayer
-            ? const Color(0xFF1E1E1E).withOpacity(0.7)
-            : const Color(0xFF1E1E1E).withOpacity(0.9);
+    final containerColor = isNextPrayer
+        ? const Color(0xFF1E1E1E).withOpacity(0.7)
+        : const Color(0xFF1E1E1E).withOpacity(0.9);
 
     final borderColor =
         isNextPrayer ? Colors.tealAccent.withOpacity(0.7) : Colors.transparent;
@@ -372,16 +377,15 @@ class HomePage extends ConsumerWidget {
         color: containerColor,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: borderColor, width: 1.5),
-        boxShadow:
-            isNextPrayer
-                ? [
-                  BoxShadow(
-                    color: Colors.tealAccent.withOpacity(0.15),
-                    blurRadius: 10.r,
-                    spreadRadius: 1.r,
-                  ),
-                ]
-                : [],
+        boxShadow: isNextPrayer
+            ? [
+                BoxShadow(
+                  color: Colors.tealAccent.withOpacity(0.15),
+                  blurRadius: 10.r,
+                  spreadRadius: 1.r,
+                ),
+              ]
+            : [],
       ),
       child: Row(
         children: [
