@@ -7,6 +7,7 @@ plugins {
 android {
     namespace = "com.wisam.salatTime"
     compileSdk = 36
+    ndkVersion = "21.2.13676358"
 
     defaultConfig {
         applicationId = "com.wisam.salatTime"
