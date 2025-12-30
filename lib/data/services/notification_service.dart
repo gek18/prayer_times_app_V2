@@ -22,9 +22,6 @@ class NotificationService {
     _initializeNotifications();
   }
 
-  // ---------------------------------------------------------------------------
-  // 1) التهيئة العامة
-  // ---------------------------------------------------------------------------
   Future<void> _initializeNotifications() async {
     if (_isInitialized) return;
 
@@ -49,7 +46,6 @@ class NotificationService {
       },
     );
 
-    // Android فقط: إنشاء قنوات الأصوات
     if (Platform.isAndroid) {
       await _createAndroidChannels();
     }
@@ -58,23 +54,18 @@ class NotificationService {
     developer.log('✅ NotificationService initialized');
   }
 
-  // ---------------------------------------------------------------------------
-  // 2) قنوات أندرويد
-  // ---------------------------------------------------------------------------
   static const List<String> _muezzinRawSounds = [
     'yasir',
     'naseer',
     'mishary',
     'abdulbasit',
-    'notification', // نغمة قصيرة / تذكير
+    'notification',
   ];
 
   Future<void> _createAndroidChannels() async {
     final android =
-        flutterLocalNotificationsPlugin
-            .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin
-            >();
+        flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
 
     if (android == null) return;
 
@@ -100,17 +91,12 @@ class NotificationService {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // 3) صلاحيات
-  // ---------------------------------------------------------------------------
   Future<bool> ensureExactAlarmsEnabled() async {
     if (!Platform.isAndroid) return true;
 
     final android =
-        flutterLocalNotificationsPlugin
-            .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin
-            >();
+        flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
     if (android == null) return true;
 
     try {
@@ -125,22 +111,17 @@ class NotificationService {
   Future<bool> areNotificationsEnabled() async {
     try {
       if (Platform.isAndroid) {
-        final android =
-            flutterLocalNotificationsPlugin
-                .resolvePlatformSpecificImplementation<
-                  AndroidFlutterLocalNotificationsPlugin
-                >();
+        final android = flutterLocalNotificationsPlugin
+            .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>();
         if (android != null) {
           return await android.areNotificationsEnabled() ?? true;
         }
       }
 
-      // iOS / macOS
       final ios =
-          flutterLocalNotificationsPlugin
-              .resolvePlatformSpecificImplementation<
-                IOSFlutterLocalNotificationsPlugin
-              >();
+          flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>();
       if (ios != null) {
         final granted = await ios.requestPermissions(
           alert: true,
@@ -160,11 +141,9 @@ class NotificationService {
   Future<bool> requestPermissions() async {
     try {
       if (Platform.isAndroid) {
-        final android =
-            flutterLocalNotificationsPlugin
-                .resolvePlatformSpecificImplementation<
-                  AndroidFlutterLocalNotificationsPlugin
-                >();
+        final android = flutterLocalNotificationsPlugin
+            .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>();
         if (android != null) {
           final granted = await android.requestNotificationsPermission();
           return granted ?? true;
@@ -172,12 +151,9 @@ class NotificationService {
         return true;
       }
 
-      // iOS
       final ios =
-          flutterLocalNotificationsPlugin
-              .resolvePlatformSpecificImplementation<
-                IOSFlutterLocalNotificationsPlugin
-              >();
+          flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>();
       if (ios != null) {
         final result = await ios.requestPermissions(
           alert: true,
@@ -187,12 +163,9 @@ class NotificationService {
         return result ?? false;
       }
 
-      // macOS
       final mac =
-          flutterLocalNotificationsPlugin
-              .resolvePlatformSpecificImplementation<
-                MacOSFlutterLocalNotificationsPlugin
-              >();
+          flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+              MacOSFlutterLocalNotificationsPlugin>();
       if (mac != null) {
         final result = await mac.requestPermissions(
           alert: true,
@@ -209,9 +182,6 @@ class NotificationService {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // 4) إشعار فوري
-  // ---------------------------------------------------------------------------
   Future<void> showImmediateNotification({
     required String title,
     required String body,
@@ -242,11 +212,9 @@ class NotificationService {
         presentSound: true,
       );
     } else if (Platform.isIOS) {
-      // iOS → نغمة قصيرة من داخل الإشعار فقط
-      final sound =
-          soundFileName != null
-              ? _iosFileName(soundFileName)
-              : 'notification.caf';
+      final sound = soundFileName != null
+          ? _iosFileName(soundFileName)
+          : 'notification.caf';
 
       iosDetails = DarwinNotificationDetails(
         presentAlert: true,
@@ -272,9 +240,6 @@ class NotificationService {
     if (!_isInitialized) await _initializeNotifications();
   }
 
-  // ---------------------------------------------------------------------------
-  // 5) جدولة إشعار صلاة واحد
-  // ---------------------------------------------------------------------------
   Future<void> _schedulePrayerNotification({
     required DateTime scheduledTime,
     required String title,
@@ -291,13 +256,11 @@ class NotificationService {
 
     final tzTime = tz.TZDateTime.from(scheduledTime, tz.local);
 
-    // Android
     if (Platform.isAndroid) {
       final exactAllowed = await ensureExactAlarmsEnabled();
-      final mode =
-          exactAllowed
-              ? AndroidScheduleMode.exactAllowWhileIdle
-              : AndroidScheduleMode.inexactAllowWhileIdle;
+      final mode = exactAllowed
+          ? AndroidScheduleMode.exactAllowWhileIdle
+          : AndroidScheduleMode.inexactAllowWhileIdle;
 
       final raw = _rawName(soundFileName);
       final channelId =
@@ -329,9 +292,7 @@ class NotificationService {
       return;
     }
 
-    // iOS
     if (Platform.isIOS) {
-      // ✅ خيارك 2: نغمة قصيرة فقط داخل الإشعار
       final iosSound = isSilent ? null : _iosFileName(soundFileName);
 
       final iosDetails = DarwinNotificationDetails(
@@ -352,7 +313,6 @@ class NotificationService {
       return;
     }
 
-    // منصات أخرى
     await flutterLocalNotificationsPlugin.zonedSchedule(
       id,
       title,
@@ -366,20 +326,15 @@ class NotificationService {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // 6) جدولة كل الصلوات + تذكير قبل الفجر
-  // ---------------------------------------------------------------------------
   Future<void> scheduleAllNotifications(PrayerTimes times) async {
     await _ensureInitialized();
     final prefs = await SharedPreferences.getInstance();
 
-    // أندرويد فقط: صوت الأذان من الإعدادات
     final androidVoice = prefs.getString(kPrayerVoiceKey) ?? 'mishary.mp3';
     final reminderEnabled = prefs.getBool(kPreFajrReminderEnabled) ?? true;
 
     await flutterLocalNotificationsPlugin.cancelAll();
 
-    // تذكير قبل الفجر بـ 10 دقائق
     if (reminderEnabled) {
       final reminderTime = times.fajr.subtract(const Duration(minutes: 10));
       await _schedulePrayerNotification(
@@ -416,19 +371,12 @@ class NotificationService {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // 7) إلغاء الكل
-  // ---------------------------------------------------------------------------
   Future<void> cancelAllNotifications() async {
     await flutterLocalNotificationsPlugin.cancelAll();
   }
 
-  // ---------------------------------------------------------------------------
-  // Helpers
-  // ---------------------------------------------------------------------------
   String _rawName(String fileName) => fileName.split('.').first;
 
-  /// iOS يتوقع اسم ملف مثل `mysound.caf` داخل الـ Bundle
   String _iosFileName(String fileName) {
     final base = _rawName(fileName);
     return '$base.caf';

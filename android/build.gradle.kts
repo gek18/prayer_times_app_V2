@@ -1,4 +1,4 @@
-// ✅ الجذر العام لمشروع الأندرويد
+//  الجذر العام لمشروع الأندرويد
 import org.gradle.api.tasks.Delete
 import org.gradle.api.file.Directory
 
@@ -29,7 +29,7 @@ allprojects {
     }
 }
 
-// ✅ تغيير مسار build directory (من Flutter)
+//  تغيير مسار build directory (من Flutter)
 val newBuildDir: Directory = rootProject.layout.buildDirectory.dir("../../build").get()
 rootProject.layout.buildDirectory.value(newBuildDir)
 
@@ -38,12 +38,12 @@ subprojects {
     project.layout.buildDirectory.value(newSubprojectBuildDir)
 }
 
-// ✅ بعض الإضافات تتطلب التأكد من تقييم app قبل البقية
+//  بعض الإضافات تتطلب التأكد من تقييم app قبل البقية
 subprojects {
     project.evaluationDependsOn(":app")
 }
 
-// ✅ أمر clean لحذف مجلدات build
+//  أمر clean لحذف مجلدات build
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }

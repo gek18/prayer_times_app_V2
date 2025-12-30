@@ -16,14 +16,11 @@ import 'package:prayer_times_app/presentation/widgets/prayer_banner_ad.dart';
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
-  /// 🕒 آخر وقت تم فيه عرض إعلان بيني (Cooldown)
   static DateTime? _lastInterstitialShown;
 
-  /// ✅ عرض إعلان بيني ثم الانتقال للصفحة المطلوبة مع تهدئة 30 ثانية
   void _showInterstitialAndNavigate(BuildContext context, Widget page) {
     final now = DateTime.now();
 
-    // ⏱️ لو تم عرض إعلان خلال آخر 30 ثانية → نذهب مباشرة بدون إعلان
     if (_lastInterstitialShown != null &&
         now.difference(_lastInterstitialShown!) < const Duration(seconds: 30)) {
       debugPrint('⏱️ Interstitial cooldown active, navigating without ad');
@@ -31,13 +28,10 @@ class HomePage extends ConsumerWidget {
       return;
     }
 
-    // نحدّث وقت آخر عرض (حتى لو فشل التحميل، لا نزعج المستخدم بتكرار المحاولة)
     _lastInterstitialShown = now;
 
     InterstitialAd.load(
-      // 🔹 Test ID من جوجل أثناء التطوير
       adUnitId: 'ca-app-pub-3322345933938430/4543357572',
-      // ⚠️ عند النشر: استبدله بالـ Interstitial Ad Unit ID الحقيقي من AdMob
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (InterstitialAd ad) {
@@ -60,7 +54,7 @@ class HomePage extends ConsumerWidget {
         },
         onAdFailedToLoad: (LoadAdError error) {
           debugPrint('❌ Failed to load interstitial: $error');
-          // لو فشل تحميل الإعلان → نكمل التنقل عادي بدون إعلان
+
           Navigator.push(context, MaterialPageRoute(builder: (_) => page));
         },
       ),
@@ -119,13 +113,10 @@ class HomePage extends ConsumerWidget {
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          // 🌈 خلفية متدرجة ديناميكيًا
           AnimatedContainer(
             duration: const Duration(seconds: 2),
             decoration: BoxDecoration(gradient: viewModel.getDynamicGradient()),
           ),
-
-          // زخرفة باهتة في الخلف
           Opacity(
             opacity: 0.04,
             child: Container(
@@ -138,8 +129,6 @@ class HomePage extends ConsumerWidget {
               ),
             ),
           ),
-
-          // 🔹 المحتوى الرئيسي
           SafeArea(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.w),
@@ -152,17 +141,13 @@ class HomePage extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           SizedBox(height: 16.h),
-
-                          // 🟢 إعلان بانر في أعلى المحتوى
                           Center(
                             child: PrayerBannerAd(
                               adUnitId:
                                   'ca-app-pub-3322345933938430/6573012749',
-                              // ✅ Test Banner ID أثناء التطوير
                             ),
                           ),
                           SizedBox(height: 20.h),
-
                           Text(
                             state.city,
                             style: GoogleFonts.tajawal(
@@ -196,10 +181,7 @@ class HomePage extends ConsumerWidget {
                             ),
                             style: timerStyle,
                           ),
-
                           SizedBox(height: 30.h),
-
-                          // 🕋 أوقات الصلاة
                           if (state.prayerTimes != null) ...[
                             _buildPrayerRow(
                               context,
@@ -254,14 +236,10 @@ class HomePage extends ConsumerWidget {
                               prayerTimeStyle,
                             ),
                           ],
-
                           SizedBox(height: 20.h),
-
-                          // 🔸 الأزرار السفلية
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              // حصن المسلم → إعلان بيني + تنقل
                               _buildMainButton(
                                 context,
                                 iconPath: 'assets/icons/book.svg',
@@ -271,7 +249,6 @@ class HomePage extends ConsumerWidget {
                                   const HisnPage(),
                                 ),
                               ),
-
                               _buildMainButton(
                                 context,
                                 iconPath: 'assets/icons/qubla.svg',
@@ -283,7 +260,6 @@ class HomePage extends ConsumerWidget {
                               ),
                             ],
                           ),
-
                           SizedBox(height: 30.h),
                         ],
                       ),
@@ -295,7 +271,6 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  // ✅ زر رئيسي بنفس التصميم المطلوب
   Widget _buildMainButton(
     BuildContext context, {
     required String iconPath,
@@ -306,7 +281,7 @@ class HomePage extends ConsumerWidget {
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 8.w),
         child: SizedBox(
-          height: 58.h, // ✅ ارتفاع مضبوط لإعطاء الشكل المطلوب
+          height: 58.h,
           child: ElevatedButton(
             onPressed: onTap,
             style: ElevatedButton.styleFrom(
@@ -351,7 +326,6 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  // ✅ صفّ أوقات الصلاة
   Widget _buildPrayerRow(
     BuildContext context,
     String name,

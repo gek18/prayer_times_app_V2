@@ -17,10 +17,8 @@ import 'package:prayer_times_app/presentation/home_page.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // ✅ تهيئة التقويم الهجري
   HijriCalendar.setLocal('ar');
 
-  // ✅ تهيئة إعلانات جوجل
   try {
     await MobileAds.instance.initialize();
     developer.log('✅ MobileAds initialized');
@@ -28,13 +26,11 @@ Future<void> main() async {
     developer.log('⚠️ MobileAds init error: $e');
   }
 
-  // ✅ تهيئة المناطق الزمنية
   try {
     tzdata.initializeTimeZones();
 
     final currentTimeZone = await FlutterTimezone.getLocalTimezone();
 
-    // ✅ تحويل TimezoneInfo إلى String
     tz.setLocalLocation(tz.getLocation(currentTimeZone.toString()));
 
     developer.log('✅ Timezone set to: ${tz.local.name}');

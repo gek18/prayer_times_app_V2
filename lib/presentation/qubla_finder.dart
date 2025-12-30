@@ -44,7 +44,7 @@ class _QiblaFinderState extends State<QiblaFinder>
 
     _rotateCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 250), // 🔥 أنعم حركة
+      duration: const Duration(milliseconds: 250),
     );
 
     _pulseCtrl = AnimationController(
@@ -65,17 +65,11 @@ class _QiblaFinderState extends State<QiblaFinder>
     _initialize();
   }
 
-  // --------------------------------------------------------------------------
-  // 🔹 طلب صلاحيات الموقع (iOS + Android)
-  // --------------------------------------------------------------------------
   Future<void> _requestPermissions() async {
     final status = await Permission.locationWhenInUse.request();
     setState(() => _locationGranted = status.isGranted);
   }
 
-  // --------------------------------------------------------------------------
-  // 🔹 تهيئة الحساسات
-  // --------------------------------------------------------------------------
   Future<void> _initialize() async {
     await _requestPermissions();
     if (!_locationGranted) {
@@ -83,7 +77,6 @@ class _QiblaFinderState extends State<QiblaFinder>
       return;
     }
 
-    // حساس البوصلة في iOS دائماً مدعوم
     if (Theme.of(context).platform == TargetPlatform.android) {
       final supported = await FlutterQiblah.androidDeviceSensorSupport();
       _sensorSupported = supported ?? true;
@@ -98,25 +91,18 @@ class _QiblaFinderState extends State<QiblaFinder>
     }
   }
 
-  // --------------------------------------------------------------------------
-  // 🔹 الاشتراك بقراءة القبلة
-  // --------------------------------------------------------------------------
   void _listenQiblah() {
     _subscription?.cancel();
 
     _subscription = FlutterQiblah.qiblahStream.listen((q) {
       double raw = (q.qiblah % 360 + 360) % 360;
 
-      // حماية ضد NaN
       if (raw.isNaN) return;
 
-      // Exponential Smoothing
-      _smoothedAngle =
-          _smoothedAngle == 0
-              ? raw
-              : _smoothedAngle + _alpha * (raw - _smoothedAngle);
+      _smoothedAngle = _smoothedAngle == 0
+          ? raw
+          : _smoothedAngle + _alpha * (raw - _smoothedAngle);
 
-      // Median Filter
       _window.add(_smoothedAngle);
       if (_window.length > _medianWindowSize) _window.removeAt(0);
       final sorted = [..._window]..sort();
@@ -136,9 +122,6 @@ class _QiblaFinderState extends State<QiblaFinder>
     });
   }
 
-  // --------------------------------------------------------------------------
-  // 🔹 حركة العقرب
-  // --------------------------------------------------------------------------
   void _animateNeedle() {
     final targetRad = -_angle * pi / 180;
 
@@ -151,9 +134,6 @@ class _QiblaFinderState extends State<QiblaFinder>
     _prevRad = targetRad;
   }
 
-  // --------------------------------------------------------------------------
-  // 🔹 النظافة
-  // --------------------------------------------------------------------------
   @override
   void dispose() {
     _subscription?.cancel();
@@ -163,9 +143,6 @@ class _QiblaFinderState extends State<QiblaFinder>
     super.dispose();
   }
 
-  // --------------------------------------------------------------------------
-  // 🔹 الواجهة
-  // --------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     final style = GoogleFonts.tajawal(
@@ -259,9 +236,6 @@ class _QiblaFinderState extends State<QiblaFinder>
     );
   }
 
-  // --------------------------------------------------------------------------
-  // 🔹 واجهة البوصلة
-  // --------------------------------------------------------------------------
   Widget _buildCompassUI() {
     final size = MediaQuery.of(context).size;
     final compassSize = min(size.width * 0.78, 330.0);
@@ -274,12 +248,11 @@ class _QiblaFinderState extends State<QiblaFinder>
         Center(
           child: AnimatedBuilder(
             animation: _rotateCtrl,
-            builder:
-                (_, child) => Transform.rotate(
-                  angle: _rotationAnim.value,
-                  alignment: Alignment.center,
-                  child: child,
-                ),
+            builder: (_, child) => Transform.rotate(
+              angle: _rotationAnim.value,
+              alignment: Alignment.center,
+              child: child,
+            ),
             child: Container(
               width: compassSize,
               height: compassSize,
@@ -299,34 +272,33 @@ class _QiblaFinderState extends State<QiblaFinder>
                   if (aligned)
                     AnimatedBuilder(
                       animation: _pulseCtrl,
-                      builder:
-                          (_, __) => Transform.scale(
-                            scale: _pulseScale.value,
-                            child: Opacity(
-                              opacity: _pulseOpacity.value,
-                              child: Container(
-                                width: compassSize * 0.18,
-                                height: compassSize * 0.18,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: RadialGradient(
-                                    colors: [
-                                      Colors.tealAccent.withOpacity(0.8),
-                                      Colors.tealAccent.withOpacity(0.1),
-                                    ],
-                                    stops: const [0.3, 1.0],
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.tealAccent.withOpacity(0.5),
-                                      blurRadius: 20,
-                                      spreadRadius: 2,
-                                    ),
-                                  ],
-                                ),
+                      builder: (_, __) => Transform.scale(
+                        scale: _pulseScale.value,
+                        child: Opacity(
+                          opacity: _pulseOpacity.value,
+                          child: Container(
+                            width: compassSize * 0.18,
+                            height: compassSize * 0.18,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: RadialGradient(
+                                colors: [
+                                  Colors.tealAccent.withOpacity(0.8),
+                                  Colors.tealAccent.withOpacity(0.1),
+                                ],
+                                stops: const [0.3, 1.0],
                               ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.tealAccent.withOpacity(0.5),
+                                  blurRadius: 20,
+                                  spreadRadius: 2,
+                                ),
+                              ],
                             ),
                           ),
+                        ),
+                      ),
                     ),
                 ],
               ),
@@ -366,28 +338,24 @@ class _QiblaFinderState extends State<QiblaFinder>
   }
 }
 
-// --------------------------------------------------------------------------
-
 class _DialPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = size.center(Offset.zero);
     final radius = size.width / 2 - 8;
 
-    final ringPaint =
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 3
-          ..shader = const LinearGradient(
-            colors: [Colors.tealAccent, Colors.cyanAccent],
-          ).createShader(Rect.fromCircle(center: center, radius: radius));
+    final ringPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..shader = const LinearGradient(
+        colors: [Colors.tealAccent, Colors.cyanAccent],
+      ).createShader(Rect.fromCircle(center: center, radius: radius));
 
     canvas.drawCircle(center, radius, ringPaint);
 
-    final tickPaint =
-        Paint()
-          ..strokeWidth = 1
-          ..color = Colors.white24;
+    final tickPaint = Paint()
+      ..strokeWidth = 1
+      ..color = Colors.white24;
 
     const ticks = 36;
 

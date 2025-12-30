@@ -16,7 +16,7 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
 
-        // ✅ لتجنب أخطاء تعدد ملفات Dex
+        //  لتجنب أخطاء تعدد ملفات Dex
         multiDexEnabled = true
     }
 
@@ -24,12 +24,12 @@ android {
         viewBinding = true
     }
 
-    // ✅ منع ضغط ملفات الصوت داخل APK
+    //  منع ضغط ملفات الصوت داخل APK
     androidResources {
         noCompress += listOf("mp3", "wav", "ogg")
     }
 
-    // ✅ إعدادات Java & Desugar لتشغيل Java 17
+    //  إعدادات Java & Desugar لتشغيل Java 17
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -40,14 +40,14 @@ android {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
-    // ✅ مجلدات الموارد (Resources)
+    // مجلدات الموارد (Resources)
     sourceSets {
         getByName("main") {
             res.srcDirs("src/main/res", "src/main/res/raw")
         }
     }
 
-    // ✅ أنواع البناء
+    //  أنواع البناء
     buildTypes {
         getByName("debug") {
             isMinifyEnabled = false
@@ -60,18 +60,18 @@ android {
             isShrinkResources = false
             signingConfig = signingConfigs.getByName("debug")
 
-            // ✅ إصلاح أخطاء DEX المحتملة
+            //  إصلاح أخطاء DEX المحتملة
             multiDexKeepProguard = file("multidex-config.pro")
         }
     }
 
-    // ✅ تعطيل توقف Lint في حال وجود تحذيرات
+    //  تعطيل توقف Lint في حال وجود تحذيرات
     lint {
         checkReleaseBuilds = false
         abortOnError = false
     }
 
-    // ✅ استبعاد الملفات المكررة من المكتبات
+    //  استبعاد الملفات المكررة من المكتبات
     packaging {
         resources {
             excludes += listOf(
@@ -96,9 +96,9 @@ flutter {
 }
 
 dependencies {
-    // ✅ دعم تعدد DEX لتفادي أخطاء build المستقبلية
+    //  دعم تعدد DEX لتفادي أخطاء build المستقبلية
     implementation("androidx.multidex:multidex:2.0.1")
 
-    // ✅ مكتبة desugar لتوافق Java 17
+    //  مكتبة desugar لتوافق Java 17
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }

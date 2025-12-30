@@ -42,7 +42,6 @@ class PrayerViewModel extends ChangeNotifier {
   }
 
   Future<void> _initialize() async {
-    // استدعاء الإذن بعد أول Frame لضمان قبول النظام له
     Future.delayed(Duration.zero, () {
       _notificationService.requestPermissions();
     });
@@ -108,7 +107,6 @@ class PrayerViewModel extends ChangeNotifier {
     params.highLatitudeRule = HighLatitudeRule.middle_of_the_night;
     params.adjustments = PrayerAdjustments(dhuhr: 2);
 
-    // 🔥 الطريقة الصحيحة لحساب مواقيت اليوم
     final prayerTimes = PrayerTimes.today(coordinates, params);
 
     _prayerTimes = prayerTimes;

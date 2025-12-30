@@ -21,7 +21,6 @@ class AppSettingsPage extends ConsumerStatefulWidget {
 }
 
 class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
-  // أصوات المؤذنين
   final List<String> muezzins = [
     'yasir.mp3',
     'naseer.mp3',
@@ -38,11 +37,9 @@ class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
     'أذان الحرم',
   ];
 
-  // الإعدادات
   String _selectedMuezzin = 'mishary.mp3';
   bool _preFajrReminder = true;
 
-  // حالة الصلاحيات
   bool _notificationsEnabled = true;
   bool _exactAlarmsAllowed = true;
 
@@ -53,9 +50,6 @@ class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
     _checkPermissions();
   }
 
-  // ---------------------------------------------------------------------------
-  // 🔹 فحص صلاحيات الإشعارات (Android + iOS)
-  // ---------------------------------------------------------------------------
   Future<void> _checkPermissions() async {
     final notificationService = ref.read(notificationServiceProvider);
 
@@ -78,52 +72,45 @@ class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // 🔹 صندوق حوار عند نقص الصلاحيات
-  // ---------------------------------------------------------------------------
   void _showPermissionDialog({
     required bool notifEnabled,
     required bool exactAllowed,
   }) {
     showDialog(
       context: context,
-      builder:
-          (_) => AlertDialog(
-            backgroundColor: const Color(0xFF2C2C2E),
-            title: Text(
-              '⚠️ الصلاحيات مطلوبة',
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFF2C2C2E),
+        title: Text(
+          '⚠️ الصلاحيات مطلوبة',
+          style: GoogleFonts.tajawal(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          !notifEnabled && !exactAllowed
+              ? 'الإشعارات والجدولة الدقيقة معطلتان.\nيرجى تفعليهما من إعدادات الجهاز.'
+              : !notifEnabled
+                  ? 'الإشعارات معطلة.\nيرجى تفعيلها من إعدادات الجهاز.'
+                  : 'الجدولة الدقيقة (Exact Alarm) غير مفعلة.\nقد تتأخر الإشعارات.',
+          style: GoogleFonts.tajawal(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'حسناً',
               style: GoogleFonts.tajawal(
-                color: Colors.white,
+                color: Colors.deepPurpleAccent,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            content: Text(
-              !notifEnabled && !exactAllowed
-                  ? 'الإشعارات والجدولة الدقيقة معطلتان.\nيرجى تفعليهما من إعدادات الجهاز.'
-                  : !notifEnabled
-                  ? 'الإشعارات معطلة.\nيرجى تفعيلها من إعدادات الجهاز.'
-                  : 'الجدولة الدقيقة (Exact Alarm) غير مفعلة.\nقد تتأخر الإشعارات.',
-              style: GoogleFonts.tajawal(color: Colors.white70),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'حسناً',
-                  style: GoogleFonts.tajawal(
-                    color: Colors.deepPurpleAccent,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
           ),
+        ],
+      ),
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // 🔹 تحميل الإعدادات القديمة
-  // ---------------------------------------------------------------------------
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -137,9 +124,6 @@ class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // 🔹 حفظ الإعدادات
-  // ---------------------------------------------------------------------------
   Future<void> _saveSettings() async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -167,9 +151,6 @@ class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // 🔹 واجهة الصفحة
-  // ---------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     final h = MediaQuery.of(context).size.height;
@@ -193,8 +174,6 @@ class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
         child: Column(
           children: [
             SizedBox(height: h * 0.14),
-
-            // رسالة الصلاحيات
             if (!_notificationsEnabled || !_exactAlarmsAllowed)
               Container(
                 padding: const EdgeInsets.all(15),
@@ -212,8 +191,8 @@ class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
                         !_notificationsEnabled && !_exactAlarmsAllowed
                             ? "الإشعارات والجدولة الدقيقة معطلتان"
                             : !_notificationsEnabled
-                            ? "الإشعارات معطلة"
-                            : "الجدولة الدقيقة غير مفعلة",
+                                ? "الإشعارات معطلة"
+                                : "الجدولة الدقيقة غير مفعلة",
                         style: GoogleFonts.tajawal(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -223,10 +202,7 @@ class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
                   ],
                 ),
               ),
-
             const SizedBox(height: 20),
-
-            // اختيار المؤذن
             Text(
               'اختيار المؤذن',
               style: GoogleFonts.tajawal(
@@ -236,7 +212,6 @@ class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
               ),
             ),
             const SizedBox(height: 20),
-
             DropdownButtonFormField<String>(
               dropdownColor: const Color(0xFF2C2C2E),
               value: _selectedMuezzin,
@@ -267,11 +242,9 @@ class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
               ),
               onChanged: (v) => setState(() => _selectedMuezzin = v!),
             ),
-
             const SizedBox(height: 40),
             const Divider(color: Colors.white24),
             const SizedBox(height: 20),
-
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -283,9 +256,7 @@ class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
                 ),
               ),
             ),
-
             const SizedBox(height: 12),
-
             Card(
               color: const Color(0xFF2C2C2E),
               shape: RoundedRectangleBorder(
@@ -314,10 +285,7 @@ class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
                 onChanged: (v) => setState(() => _preFajrReminder = v),
               ),
             ),
-
             const SizedBox(height: 60),
-
-            // زر الحفظ
             SizedBox(
               width: double.infinity,
               height: 55,
@@ -339,7 +307,6 @@ class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
                 ),
               ),
             ),
-
             const SizedBox(height: 40),
           ],
         ),

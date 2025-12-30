@@ -43,8 +43,6 @@ class _HisnPageState extends State<HisnPage> {
         centerTitle: true,
         elevation: 0,
       ),
-
-      // 🟣 الخلفية بالصورة بخفة (Opacity)
       body: Stack(
         children: [
           Opacity(
@@ -59,68 +57,65 @@ class _HisnPageState extends State<HisnPage> {
               ),
             ),
           ),
-
-          // 🕋 المحتوى فوق الخلفية
           _hisnData.isEmpty
               ? const Center(child: CircularProgressIndicator())
               : ListView.builder(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                itemCount: _hisnData.length,
-                itemBuilder: (context, index) {
-                  final section = _hisnData[index];
-                  return Card(
-                    color: const Color.fromARGB(
-                      255,
-                      47,
-                      46,
-                      46,
-                    ), // لون داكن ناعم
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    elevation: 4,
-                    child: ExpansionTile(
-                      collapsedIconColor: Colors.deepPurpleAccent,
-                      iconColor: Colors.deepPurpleAccent,
-                      title: Text(
-                        section['title'],
-                        style: GoogleFonts.tajawal(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  itemCount: _hisnData.length,
+                  itemBuilder: (context, index) {
+                    final section = _hisnData[index];
+                    return Card(
+                      color: const Color.fromARGB(
+                        255,
+                        47,
+                        46,
+                        46,
                       ),
-                      children:
-                          (section['azkar'] as List).map((zekr) {
-                            return ListTile(
-                              title: Text(
-                                zekr['text'],
-                                textAlign: TextAlign.right,
-                                style: GoogleFonts.tajawal(
-                                  fontSize: 17,
-                                  color: Colors.white.withOpacity(0.9),
-                                  height: 1.6,
-                                ),
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 4,
+                      child: ExpansionTile(
+                        collapsedIconColor: Colors.deepPurpleAccent,
+                        iconColor: Colors.deepPurpleAccent,
+                        title: Text(
+                          section['title'],
+                          style: GoogleFonts.tajawal(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        children: (section['azkar'] as List).map((zekr) {
+                          return ListTile(
+                            title: Text(
+                              zekr['text'],
+                              textAlign: TextAlign.right,
+                              style: GoogleFonts.tajawal(
+                                fontSize: 17,
+                                color: Colors.white.withOpacity(0.9),
+                                height: 1.6,
                               ),
-                              subtitle: Text(
-                                "عدد التكرارات: ${zekr['repeat']}",
-                                textAlign: TextAlign.right,
-                                style: GoogleFonts.tajawal(
-                                  fontSize: 15,
-                                  color: Colors.deepPurpleAccent.shade100,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            ),
+                            subtitle: Text(
+                              "عدد التكرارات: ${zekr['repeat']}",
+                              textAlign: TextAlign.right,
+                              style: GoogleFonts.tajawal(
+                                fontSize: 15,
+                                color: Colors.deepPurpleAccent.shade100,
+                                fontWeight: FontWeight.bold,
                               ),
-                            );
-                          }).toList(),
-                    ),
-                  );
-                },
-              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    );
+                  },
+                ),
         ],
       ),
     );

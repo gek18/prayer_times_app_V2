@@ -25,7 +25,7 @@ end
 require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
 
 target 'Runner' do
-  # 🔴 التغيير الجوهري هنا: استخدام الربط الثابت
+  #  التغيير الجوهري هنا: استخدام الربط الثابت
   use_frameworks! :linkage => :static
   use_modular_headers!
 

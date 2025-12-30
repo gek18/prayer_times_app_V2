@@ -4,7 +4,7 @@ publish_to: "none"
 version: 3.1.0+9
 
 environment:
-  # يشتغل بشكل مريح مع Flutter 3.19+ وحتى أحدث (مثل 3.38) بشرط تثبيت Flutter المناسب.
+  
   sdk: ">=3.3.0 <4.0.0"
 
 dependencies:
@@ -44,8 +44,7 @@ dependencies:
   flutter_svg: 2.2.3
   flutter_screenutil: 5.9.3
 
-  # iOS file system paths (مهم جداً لتفادي كراش الإقلاع على iOS لديك)
-  # 2.1.5 يطلب Flutter 3.19/Dart 3.3 كحد أدنى وقد يسبب عدم توافق مع مشروعك الحالي
+  # Utilities
   path_provider: 2.1.3
 
 dev_dependencies:
